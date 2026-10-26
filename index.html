@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0c1119" />
+  <meta name="description" content="SoundProofは音声納品前の品質チェックツール。波形・ラウドネス・クリッピング・無音などをブラウザ内で解析。アップロードや登録は不要です。" />
+  <title>SoundProof — 音声を、安心して納品。</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <a href="./" class="brand" aria-label="SoundProof ホーム">
+      <span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M4 16h5l3-8 5 16 3-8h8" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span>Sound<span class="brand-emphasis">Proof</span><span class="brand-dot">.</span></span>
+    </a>
+    <nav class="topnav" aria-label="メインナビゲーション"><a href="#features">機能</a><a href="#how-it-works">使い方</a></nav>
+    <div class="header-privacy"><span class="status-pulse"></span> 100% ローカル処理</div>
+  </header>
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-kicker"><span class="kicker-line"></span> AUDIO QUALITY ASSURANCE <span class="tiny-label">v0.3</span></div>
+      <h1>音声を、<span>安心して納品。</span></h1>
+      <p class="hero-description">ファイルをまとめて置くだけ。ラウドネス、無音、ノイズ候補、音声仕様を検査。<br class="desktop-br" />専門知識がなくても、音声の気になるポイントがすぐわかる。</p>
+      <div class="feature-tags" aria-label="特長"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>アカウント不要</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M2 12h20" /></svg>インストール不要</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>ファイル送信なし</span></div>
+    </section>
+
+    <section class="workspace" aria-label="音声チェック">
+      <div class="workspace-header"><div class="workspace-title"><span class="workspace-icon">◈</span><span>ANALYSIS WORKSPACE</span></div><div class="workspace-state" id="engineState"><span class="status-pulse"></span> WASM ENGINE READY</div></div>
+      <div class="workspace-inner">
+        <div class="upload-zone" id="dropZone" role="button" tabindex="0" aria-label="音声ファイルを選択、またはドロップ">
+          <input type="file" id="fileInput" multiple accept="audio/*,.wav,.mp3,.m4a,.aac,.ogg,.flac,.webm,.aif,.aiff" hidden />
+          <div class="upload-icon"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none"><path d="M24 30V9m0 0-9 9m9-9 9 9M9 30v7a3 3 0 0 0 3 3h24a3 3 0 0 0 3-3v-7" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" /></svg></div>
+          <h2>ここに音声ファイルをドロップ</h2>
+          <p>1件でも複数でも。ドラッグ＆ドロップ、またはクリックして選択</p>
+          <button class="primary-btn" id="chooseButton" type="button">ファイルを選択 <span aria-hidden="true">↗</span></button>
+          <p class="upload-caption">WAV / MP3 / M4A / OGG など <span class="dot-sep">·</span> 1件最大 130 MB / 一度に20件 <span class="dot-sep">·</span> 対応形式はブラウザによります</p>
+        </div>
+        <div id="processing" class="processing" hidden role="status" aria-live="polite"><span class="spinner"></span><span id="processingMessage">ファイルを解析しています…</span></div>
+        <div id="errorBox" class="error-box" role="alert" hidden></div>
+      </div>
+    </section>
+
+    <section class="batch-section" id="batchSection" hidden aria-label="一括検査の結果">
+      <div class="batch-heading"><div><div class="section-eyebrow">BATCH INSPECTION</div><h2>一括検査<span class="period">.</span></h2><p id="batchProgress" aria-live="polite"></p></div><button id="batchCsvButton" class="ghost-btn" type="button">↓ 一括レポートCSV</button></div>
+      <div class="batch-table-wrap"><table class="batch-table"><thead><tr><th scope="col">ファイル</th><th scope="col">結果</th><th scope="col">LUFS</th><th scope="col">Peak</th><th scope="col">詳細</th></tr></thead><tbody id="batchRows"></tbody></table></div>
+      <p class="small-note">各音声は順番に解析します。一括検査一覧は元ファイルの結果を保持します。部分修正は作業中の1ファイルにのみ適用され、別ファイルへの切替時に破棄されます。保存する場合は先にWAVを書き出してください。</p>
+    </section>
+    <section class="results" id="results" hidden aria-label="検査結果">
+      <div class="results-heading"><div><div class="section-eyebrow">YOUR ANALYSIS</div><h2>検査結果<span class="period">.</span></h2></div><div class="result-actions"><button id="reportButton" class="ghost-btn" type="button">↓ レポート保存</button><button id="resetButton" class="ghost-btn" type="button">↻ 別のファイル</button></div></div>
+      <div class="file-info-card"><div class="file-icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 15V9m4 10V5m4 16V3m4 14V7m4 8V9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" /></svg></div><div class="file-info-main"><strong id="fileName">ファイル名</strong><div id="fileMeta">読み込み中…</div></div><span id="fileLabel" class="subtle-badge">LOCAL FILE</span></div>
+      <div class="result-toolbar"><div class="segmented-tabs" role="tablist" aria-label="検査モード"><button id="tabSimple" class="tab is-active" role="tab" aria-selected="true" aria-controls="simplePanel" type="button">簡単チェック</button><button id="tabDetailed" class="tab" role="tab" aria-selected="false" aria-controls="detailedPanel" type="button">詳細チェック & EQ</button></div><label class="profile-picker" for="presetSelect"><span>チェック用途</span><select id="presetSelect"><option value="vocal">歌い手 / ボーカル</option><option value="narration">ナレーション</option><option value="video">動画編集</option><option value="general">汎用</option></select></label></div>
+      <div id="simplePanel" role="tabpanel" aria-labelledby="tabSimple">
+        <div class="verdict" id="verdict"><div class="verdict-sign" id="verdictIcon">✓</div><div><div id="verdictTitle">チェックが完了しました</div><p id="verdictDescription">検査結果を表示します。</p></div><div class="verdict-count" id="verdictCount"></div></div>
+        <div class="metric-grid" id="quickMetrics"></div>
+        <div class="analysis-card waveform-card"><div class="card-heading"><div><h3>波形プレビュー</h3><p>ノイズ候補を選ぶか、波形を左右にドラッグして区間を選択できます。クリックすると再生位置を移動します</p></div><div class="player-controls"><button id="playButton" class="play-button" type="button" aria-label="再生">▶</button><span class="player-time" id="playerTime">00:00 / 00:00</span></div></div><div class="waveform-wrap"><canvas id="waveCanvas" height="196" aria-label="音声波形"></canvas><div id="selectedRange" class="selected-range" hidden></div><div id="playhead" class="playhead"></div></div><div class="timeline-labels"><span>00:00</span><span id="timelineMid">00:00</span><span id="timelineEnd">00:00</span></div><div class="legend"><span><i class="legend-wave"></i>音声波形</span><span><i class="legend-silence"></i>無音区間</span><span><i class="legend-clip"></i>クリッピング</span><span><i class="legend-spike"></i>クリック候補</span><span><i class="legend-hum"></i>ハム候補</span><span><i class="legend-hiss"></i>高域ノイズ候補</span></div></div>
+        <div class="analysis-card repair-card" id="repairCard">
+          <div class="card-heading"><div><h3>ノイズ位置を確認・部分修正 <span class="version-pill">NEW</span></h3><p>候補を選択するか、波形をドラッグして区間を指定。元音と修正案を聴き比べてから適用できます。</p></div><span class="micro-badge">WASM DSP</span></div>
+          <div class="repair-columns">
+            <div><div class="repair-subtitle">検出された候補 <span id="repairCandidateCount">0件</span></div><div id="noiseCandidateList" class="noise-candidate-list"></div></div>
+            <div class="repair-editor">
+              <div class="repair-subtitle">選択した区間</div>
+              <div class="selection-times" id="selectionTimes" aria-live="polite">区間を選んでください</div>
+              <label class="repair-label" for="repairMethod">修正方法</label>
+              <select id="repairMethod" class="repair-select"><option value="1">50 Hzハム抑制（倍音も対象）</option><option value="2">60 Hzハム抑制（倍音も対象）</option><option value="3">高域ノイズの軽減（8.5 kHzローパス）</option><option value="4">単発クリックの補間（約5サンプル）</option><option value="5">区間の音量を下げる（最大−18 dB）</option></select>
+              <label class="repair-label" for="repairStrength">修正の強さ <strong id="repairStrengthValue">75%</strong></label>
+              <input type="range" id="repairStrength" min="0" max="100" value="75" step="5" />
+              <div class="repair-actions"><button id="listenOriginal" class="ghost-btn" type="button" disabled>▶ 元音</button><button id="listenRepaired" class="ghost-btn" type="button" disabled>▶ 修正案</button><button id="applyRepair" class="primary-btn" type="button" disabled>修正を適用</button><button id="undoRepair" class="ghost-btn" type="button" disabled>↶ 取り消す</button></div>
+              <p class="repair-status" id="repairStatus" role="status" aria-live="polite">修正は適用前に試聴できます。元ファイルは変更しません。</p>
+              <p class="small-note">クリック補間は短い突出音の候補向けです。強い歪みや録音全体のノイズが必ず直るわけではありません。区間修正を適用したあとは再解析します。修正操作の取り消しは直前の1回分です。</p>
+            </div>
+          </div>
+        </div>
+        <div class="analysis-card issue-card"><div class="card-heading"><div><h3>チェック項目・気になるポイント</h3><p>用途別の目安を使って判定しています。納品先の指定があればそちらを優先してください。</p></div></div><div id="issueList" class="issue-list"></div></div>
+      </div>
+      <div id="detailedPanel" role="tabpanel" aria-labelledby="tabDetailed" hidden>
+        <div class="detail-grid"><div class="analysis-card details-card"><div class="card-heading"><div><h3>解析データ</h3><p>測定値の一覧</p></div><span class="micro-badge">WEBASSEMBLY</span></div><div id="detailList" class="detail-list"></div></div><div class="analysis-card spectrum-card"><div class="card-heading"><div><h3>周波数バランス</h3><p>FFTによる帯域別の相対レベル</p></div></div><div class="spectrum-chart" id="spectrumChart"></div><p class="small-note">音源から抽出した短い区間の平均値です。EQの適否を直接判定するものではありません。</p></div></div>
+        <div class="analysis-card noise-card"><div class="card-heading"><div><h3>静かな区間のノイズ解析</h3><p>WebAssemblyが低レベルの区間から50/60Hz成分・高域のノイズ候補を探します。</p></div><span class="micro-badge">EXPERIMENTAL</span></div><div class="noise-grid" id="noiseMetrics"></div><p class="small-note">ノイズの種類を確定するものではありません。音声・楽器・エアコンなどを誤検出する可能性があります。低音量区間が少ない場合は判定保留になります。</p></div>
+        <div class="analysis-card eq-card"><div class="card-heading"><div><h3>5バンド・パラメトリックEQ</h3><p>周波数、ゲイン、Q、フィルター種類を調整。音声のA/B試聴・WAV出力に反映します。</p></div><label class="switch-control"><input id="eqToggle" type="checkbox" checked><span class="switch"></span><span>EQ ON</span></label></div>
+          <div class="eq-chart eq-chart-large"><svg id="eqSvg" viewBox="0 0 440 160" role="img" aria-label="EQカーブのプレビュー"><g class="eq-grid"><path d="M12 24H428M12 56H428M12 88H428M12 120H428M12 152H428M55 12V152M135 12V152M215 12V152M295 12V152M375 12V152" /></g><path id="eqPath" d="M12 88H428" class="eq-path" /></svg><div class="eq-labels"><span>20 Hz</span><span>1 kHz</span><span>20 kHz</span></div></div>
+          <div class="param-head"><span>BAND / TYPE</span><span>FREQUENCY</span><span>GAIN</span><span>Q</span></div><div id="eqControls" class="param-controls"></div>
+          <div class="eq-footer"><p>出力は48 kHz / 16-bit WAV。ゲインを上げた音声はクリッピングする場合があるので、出力を再検査してください。</p><div class="eq-buttons"><button id="resetEqButton" class="ghost-btn" type="button">EQをリセット</button><button id="exportWavButton" class="primary-btn" type="button">WAVを書き出す ↓</button></div></div>
+        </div>
+        <div class="analysis-card limitations"><h3>解析結果について</h3><p>True Peakは4倍補間による近似測定であり、正式な規格適合証明ではありません。LUFSは48 kHzへデコードしたPCMを用いたBS.1770系のゲーティング計算です。ノイズ検査は静かな区間の周波数特性を使った候補検出であり、音源の種類や修復方法を確定するものではありません。</p></div>
+      </div>
+    </section>
+
+    <section id="features" class="landing-features"><div class="section-eyebrow">BUILT FOR YOUR WORKFLOW</div><h2>耳だけでは、<span>見落とすことがある。</span></h2><div class="landing-grid"><article><div class="feature-num">01 / INSPECT</div><h3>見逃しやすい問題を可視化</h3><p>クリッピングや無音の位置、ピークやラウドネスを数字と波形で確認。</p></article><article><div class="feature-num">02 / UNDERSTAND</div><h3>詳しくなくてもわかる</h3><p>簡単チェックと詳細チェックを切り替え。用途に応じた確認ポイントを表示。</p></article><article><div class="feature-num">03 / ADJUST</div><h3>その場で試聴・修正</h3><p>ノイズ候補の区間を選び、元音と修正案を試聴。5バンドEQも使ってWAVとして書き出し。</p></article></div></section>
+    <section id="how-it-works" class="how-panel"><span>PRIVACY BY DESIGN</span><h2>音声データは、あなたの端末から出ない。</h2><p>SoundProofの解析はブラウザとWebAssemblyで完結。ログイン、サーバーへの音声アップロード、クラウド保存はありません。</p><div class="how-tags"><span>✓ GitHub Pages対応</span><span>✓ アカウントなし</span><span>✓ ローカル完結</span></div></section>
+  </main>
+  <footer><span>SoundProof © 2026</span><span>Made for creators. Runs on your device.</span></footer>
+</div>
+</body>
+</html>
